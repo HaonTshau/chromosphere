@@ -8,7 +8,8 @@ from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 import requests
 import pprint
-
+import ssl
+import os
 
 def double_data_chart(start: str = None, end: str = None):
     """爬取双色球数据
@@ -18,14 +19,17 @@ def double_data_chart(start: str = None, end: str = None):
     :return: 二维列表: '红1', '红2', '红3', '红4', '红5', '红6', '篮球'
     """
     header, charts = ['期号', '红1', '红2', '红3', '红4', '红5', '红6', '篮球'], []
+    ssl._create_default_https_context = ssl._create_unverified_context
     url = 'https://datachart.500.com/ssq/history/newinc/history.php'
     start = start or '03001'
+    location = os.getcwd() + '/fake_useragent_0.1.11.json'
     if end is None:
-        text = requests.get(url=url, params={'user-agent': UserAgent().random}).text
+        text = requests.get(url=url, params={'user-agent': UserAgent(path=location).random}).text
         soup = BeautifulSoup(text, 'html.parser')
         end = soup.find(name='input', id='end').get('value')
     reptile_url = url + f'?start={start}&end={end}'
-    text = requests.get(url=reptile_url, params={'user-agent': UserAgent().random}).text
+    text = requests.get(url=reptile_url, params={'user-agent': UserAgent(path=location).random}).text
+    print(text)
     soup = BeautifulSoup(text, 'html.parser')
     for data in soup.find_all(name='tr', class_='t_tr1'):
         ls = [int(content.text) for content in data.contents[1:9]]
